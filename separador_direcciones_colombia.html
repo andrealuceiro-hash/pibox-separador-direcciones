@@ -352,7 +352,111 @@
     font-size: 11px; font-weight: 700;
     padding: 3px 10px;
     border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    user-select: none;
   }
+  .badge-warn:hover {
+    background: #FEF3C7;
+    border-color: #F59E0B;
+  }
+  .badge-warn:active { transform: scale(0.96); }
+  .badge-warn-title {
+    font-size: 9px; font-weight: 600;
+    opacity: 0.7; display: block; text-align: center;
+    margin-top: 1px; letter-spacing: 0.3px;
+  }
+
+
+  /* ── Panel de aprendizaje ───────────────────────────────────────────────── */
+  .learn-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--purple-dim2);
+    border: 1px solid var(--purple-border);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 1rem;
+    font-size: 13px;
+  }
+  .learn-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--purple); flex-shrink: 0;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%,100% { opacity:1; } 50% { opacity:0.3; }
+  }
+  .learn-text { color: var(--purple); font-weight: 600; flex: 1; }
+  .learn-count {
+    background: var(--purple);
+    color: #fff;
+    border-radius: 100px;
+    padding: 2px 10px;
+    font-size: 11px; font-weight: 700;
+  }
+  .learn-rules-btn {
+    font-size: 11px; font-weight: 600;
+    color: var(--purple);
+    background: none; border: 1px solid var(--purple-border);
+    border-radius: 8px; padding: 3px 10px;
+    cursor: pointer; font-family: inherit;
+    transition: background 0.12s;
+  }
+  .learn-rules-btn:hover { background: var(--purple-pale); }
+
+  /* Toast de aprendizaje */
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--gray900); color: #fff;
+    border-radius: 12px; padding: 12px 18px;
+    font-size: 13px; font-weight: 500;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    z-index: 999; max-width: 360px;
+    transform: translateY(80px); opacity: 0;
+    transition: transform 0.3s, opacity 0.3s;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 16px; flex-shrink: 0; }
+  .toast-purple { border-left: 3px solid var(--purple); }
+  .toast-green  { border-left: 3px solid var(--green); }
+
+  /* Modal de reglas */
+  .modal-bg {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.45);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 2rem;
+  }
+  .modal {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 640px; width: 100%;
+    max-height: 80vh; overflow-y: auto;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; }
+  .modal-title { font-size:16px; font-weight:800; letter-spacing:-0.3px; }
+  .modal-close { background:none; border:none; font-size:20px; cursor:pointer; color:var(--gray600); line-height:1; }
+  .modal-close:hover { color:var(--gray900); }
+  .rule-item {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 10px;
+    font-size: 12px;
+  }
+  .rule-item-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:6px; }
+  .rule-tag { background:var(--purple-pale); color:var(--purple); font-size:10px; font-weight:700; padding:2px 8px; border-radius:100px; }
+  .rule-del { background:none; border:none; color:var(--red); font-size:16px; cursor:pointer; line-height:1; }
+  .rule-del:hover { opacity:0.7; }
+  .rule-orig { color:var(--gray600); margin-bottom:4px; }
+  .rule-orig span { font-family:var(--font-mono,monospace); background:var(--gray50); padding:1px 5px; border-radius:4px; }
+  .rule-desc { color:var(--gray800); font-weight:500; }
+  .modal-empty { text-align:center; color:var(--gray600); padding:2rem 0; font-size:13px; }
+  .modal-footer { margin-top:1.25rem; display:flex; justify-content:flex-end; gap:8px; }
 
   /* ── Buttons ────────────────────────────────────────────────────────────── */
   .actions { display: flex; gap: 12px; margin-top: 1.5rem; flex-wrap: wrap; }
@@ -511,6 +615,15 @@
       </div>
     </div>
 
+
+    <!-- Panel de aprendizaje automático -->
+    <div class="learn-bar" id="learnBar" style="display:none;">
+      <div class="learn-dot"></div>
+      <div class="learn-text">Aprendizaje activo — la herramienta mejora con tus correcciones</div>
+      <span class="learn-count" id="learnCount">0 reglas</span>
+      <button class="learn-rules-btn" onclick="abrirModalReglas()">Ver reglas</button>
+    </div>
+
     <div class="hint">
       <div class="hint-item"><span class="dot dot-warn"></span> Fila con posible error — edita manualmente</div>
       <div class="hint-item"><span class="dot dot-ok"></span> Separación correcta</div>
@@ -524,7 +637,10 @@
             <th style="width:27%;">Dirección original</th>
             <th style="width:27%;">Dirección (formato CO)</th>
             <th style="width:27%;">Complemento</th>
-            <th style="width:10%; text-align:center;">Estado</th>
+            <th style="width:10%; text-align:center; cursor:pointer; user-select:none;" id="thEstado" onclick="ordenarPorEstado()" title="Ordenar por estado">
+              Estado
+              <span id="sortIcon" style="margin-left:4px; font-size:10px; color:var(--purple);">⇅</span>
+            </th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -543,6 +659,27 @@
     </div>
   </div>
 
+</div>
+
+<!-- Toast de notificación -->
+<div class="toast" id="toast">
+  <span class="toast-icon" id="toastIcon">🧠</span>
+  <span id="toastMsg">Aprendiendo...</span>
+</div>
+
+<!-- Modal de reglas aprendidas -->
+<div class="modal-bg" id="modalBg" style="display:none;" onclick="if(event.target===this)cerrarModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">Reglas aprendidas</div>
+      <button class="modal-close" onclick="cerrarModal()">×</button>
+    </div>
+    <div id="modalContent"></div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" style="padding:7px 16px;font-size:13px;" onclick="limpiarTodasReglas()">Borrar todas</button>
+      <button class="btn btn-primary" style="padding:7px 16px;font-size:13px;" onclick="cerrarModal()">Cerrar</button>
+    </div>
+  </div>
 </div>
 
 <footer class="footer">
@@ -674,8 +811,9 @@ var RE_SEP      = /^[,\/\u007C]$/;
 var RE_DIGITOS  = /^\d+$/;
 
 function preprocesar(str) {
+  // Los separadores | , / ya fueron normalizados en normalizarSeparadores()
+  // Solo procesamos # y el guión de placa aquí.
   var s = str;
-  s = s.replace(/\s*([,\/\u007C])\s*/g, ' $1 ');
   s = s.replace(/\s*#\s*/g, ' # ');
   s = s.replace(/([A-Za-z0-9])\s*-\s*(\d)/g, '$1 - $2');
   s = s.replace(/\s{2,}/g, ' ').trim();
@@ -776,11 +914,42 @@ function separarDireccion(raw) {
   return parsear(str);
 }
 
+/* ── PASO 0: Normalización de separadores ────────────────────────────────
+   Se ejecuta sobre el texto CRUDO antes de cualquier otro procesamiento.
+
+   Problema: "Calle 13 # 45-67|Torre 2" → el tokenizador lee "67|Torre"
+   como un solo token y NO puede separar dirección de complemento.
+
+   Solución: insertar espacio antes y después de | , / para que el parser
+   siempre los vea como tokens independientes y corte correctamente.
+
+   Ejemplos:
+     "Calle 13 # 45-67|Torre 2"    →  "Calle 13 # 45-67 | Torre 2"
+     "Carrera 10 # 54A-48,Apto 3"  →  "Carrera 10 # 54A-48 , Apto 3"
+     "Cra 5 # 10-20/Bosa"          →  "Cra 5 # 10-20 / Bosa"
+   ─────────────────────────────────────────────────────────────────────── */
+function normalizarSeparadores(str) {
+  return String(str || '')
+    .replace(/\s*([,\/\u007C])\s*/g, ' $1 ')
+    .replace(/\s{2,}/g, ' ')
+    .trim();
+}
+
 function procesarTodo() {
   processedRows = sheetData.slice(1).map(function(row, i) {
-    var original = String(row[0] || '').trim();
-    var r = separarDireccion(original);
-    return { idx: i+1, original: original, dir: r.dir, comp: r.comp, warn: r.warn, allCols: row.slice() };
+    /* Paso 1: normalizar separadores en la columna A antes de limpiar */
+    var rawOriginal  = String(row[0] || '').trim();
+    var original     = normalizarSeparadores(rawOriginal);
+
+    /* Paso 2: intentar reglas aprendidas primero, luego parser estándar */
+    var rAprendida = aplicarReglasAprendidas(original);
+    var r = rAprendida || separarDireccion(original);
+
+    /* Guardar la fila con la columna A ya normalizada para el Excel de salida */
+    var allCols = row.slice();
+    allCols[0]  = original;
+
+    return { idx: i+1, original: original, dir: r.dir, comp: r.comp, warn: r.warn, allCols: allCols };
   });
   renderTabla();
   document.getElementById('step2Card').style.display = 'block';
@@ -789,35 +958,128 @@ function procesarTodo() {
   }, 120);
 }
 
+/* ── Ordenamiento por estado ─────────────────────────────────────────── */
+var _sortEstado = null; // null | 'revisar-primero' | 'ok-primero'
+
+function ordenarPorEstado() {
+  // Ciclo: sin orden → revisar primero → ok primero → sin orden
+  if (_sortEstado === null)              _sortEstado = 'revisar-primero';
+  else if (_sortEstado === 'revisar-primero') _sortEstado = 'ok-primero';
+  else                                   _sortEstado = null;
+
+  var icon = document.getElementById('sortIcon');
+  if (_sortEstado === 'revisar-primero') icon.textContent = '↑';
+  else if (_sortEstado === 'ok-primero') icon.textContent = '↓';
+  else                                   icon.textContent = '⇅';
+
+  renderTabla();
+}
+
+function rowsPorOrden() {
+  // Devuelve los índices originales en el orden que debe mostrarse
+  var indices = processedRows.map(function(_, i) { return i; });
+  if (_sortEstado === 'revisar-primero') {
+    indices.sort(function(a, b) {
+      var aWarn = processedRows[a].warn && !processedRows[a].manualOk ? 0 : 1;
+      var bWarn = processedRows[b].warn && !processedRows[b].manualOk ? 0 : 1;
+      return aWarn - bWarn;
+    });
+  } else if (_sortEstado === 'ok-primero') {
+    indices.sort(function(a, b) {
+      var aOk = (!processedRows[a].warn || processedRows[a].manualOk) ? 0 : 1;
+      var bOk = (!processedRows[b].warn || processedRows[b].manualOk) ? 0 : 1;
+      return aOk - bOk;
+    });
+  }
+  return indices;
+}
+
+function badgeHTML(r, i) {
+  if (!r.warn || r.manualOk) {
+    return '<span class="badge-ok"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>OK</span>';
+  }
+  return '<span class="badge-warn" data-i="' + i + '" title="Haz clic para marcar como revisada">' +
+           '<span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>' +
+           'Revisar' +
+           '<span class="badge-warn-title">clic para OK</span>' +
+         '</span>';
+}
+
+function actualizarContadores() {
+  var total = processedRows.length;
+  var warns = processedRows.filter(function(r) { return r.warn && !r.manualOk; }).length;
+  var ok    = total - warns;
+  document.getElementById('stTotal').textContent = total;
+  document.getElementById('stOk').textContent    = ok;
+  document.getElementById('stWarn').textContent  = warns;
+}
+
+function marcarOk(idx) {
+  processedRows[idx].manualOk = true;
+  // Buscar la fila por data-i (funciona aunque la tabla esté ordenada)
+  var tbody = document.getElementById('tbody');
+  var tr = tbody.querySelector('tr[data-i="' + idx + '"]');
+  if (tr) {
+    tr.classList.remove('warn-row');
+    var tdEstado = tr.querySelector('td:last-child');
+    if (tdEstado) tdEstado.innerHTML = badgeHTML(processedRows[idx], idx);
+  }
+  actualizarContadores();
+}
+
 function renderTabla() {
   var tbody = document.getElementById('tbody');
   tbody.innerHTML = '';
-  var warns = 0;
-  processedRows.forEach(function(r, i) {
-    if (r.warn) warns++;
+  rowsPorOrden().forEach(function(i) {
+    var r  = processedRows[i];
     var tr = document.createElement('tr');
-    if (r.warn) tr.className = 'warn-row';
+    if (r.warn && !r.manualOk) tr.className = 'warn-row';
+    tr.setAttribute('data-i', i);
     tr.innerHTML =
       '<td class="row-num">' + r.idx + '</td>' +
       '<td class="row-orig">' + esc(r.original) + '</td>' +
       '<td><input class="editable" value="' + esc(r.dir)  + '" data-i="' + i + '" data-f="dir" /></td>' +
       '<td><input class="editable" value="' + esc(r.comp) + '" data-i="' + i + '" data-f="comp" /></td>' +
-      '<td style="text-align:center;">' +
-        (r.warn
-          ? '<span class="badge-warn"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>Revisar</span>'
-          : '<span class="badge-ok"><span style="width:5px;height:5px;border-radius:50%;background:currentColor;display:inline-block;"></span>OK</span>') +
-      '</td>';
+      '<td style="text-align:center;">' + badgeHTML(r, i) + '</td>';
     tbody.appendChild(tr);
   });
+  // Listeners: campos editables — captura correcciones para aprendizaje
   tbody.querySelectorAll('.editable').forEach(function(inp) {
+    // Guardar valor original del parser al enfocar
+    inp.addEventListener('focus', function(e) {
+      var idx = +e.target.dataset.i;
+      var r   = processedRows[idx];
+      // Guardar snapshot del parser la primera vez
+      if (r._parserDir === undefined) {
+        r._parserDir  = r.dir;
+        r._parserComp = r.comp;
+      }
+      e.target.dataset.valorAntes = e.target.value;
+    });
+    // Actualizar valor en tiempo real
     inp.addEventListener('input', function(e) {
       processedRows[+e.target.dataset.i][e.target.dataset.f] = e.target.value;
     });
+    // Al perder foco: si cambió y era fila "Revisar", enviar a Claude para aprender
+    inp.addEventListener('blur', function(e) {
+      var idx         = +e.target.dataset.i;
+      var r           = processedRows[idx];
+      var valorAntes  = e.target.dataset.valorAntes || '';
+      var valorAhora  = e.target.value;
+      if (valorAhora !== valorAntes && r.warn && !r.manualOk) {
+        r._editado = true;
+        // Pequeño delay para que el usuario termine de editar ambos campos
+        clearTimeout(r._debounce);
+        r._debounce = setTimeout(function() { analizarCorreccion(idx); }, 1200);
+      }
+    });
   });
-  var total = processedRows.length, ok = total - warns;
-  document.getElementById('stTotal').textContent = total;
-  document.getElementById('stOk').textContent    = ok;
-  document.getElementById('stWarn').textContent  = warns;
+  // Listener delegado: clic en badge-warn para marcar OK
+  tbody.addEventListener('click', function(e) {
+    var badge = e.target.closest('.badge-warn');
+    if (badge) marcarOk(+badge.dataset.i);
+  });
+  actualizarContadores();
   document.getElementById('snum2').textContent = '✓';
   document.getElementById('stp2').className = 'step-item done';
   document.getElementById('stp3').className = 'step-item active';
@@ -826,10 +1088,16 @@ function renderTabla() {
 }
 
 document.getElementById('btnDescargar').addEventListener('click', function() {
-  var out = [headers.concat(['Direccion_CO','Complemento'])];
-  processedRows.forEach(function(r) { out.push(r.allCols.concat([r.dir, r.comp])); });
+  // Col A = Direccion_CO, Col B = Complemento, Col C+ = columnas originales sin tocar
+  var restHeaders = headers.slice(1);
+  var outHeaders  = ['Direccion_CO', 'Complemento'].concat(restHeaders);
+  var out = [outHeaders];
+  processedRows.forEach(function(r) {
+    var restCols = r.allCols.slice(1);
+    out.push([r.dir, r.comp].concat(restCols));
+  });
   var ws = XLSX.utils.aoa_to_sheet(out);
-  ws['!cols'] = out[0].map(function(_,i){ return { wch: i >= out[0].length-2 ? 44 : 22 }; });
+  ws['!cols'] = out[0].map(function(_, i) { return { wch: i < 2 ? 44 : 22 }; });
   var wb2 = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb2, ws, 'Procesadas');
   XLSX.writeFile(wb2, 'pibox_direcciones_procesadas.xlsx');
@@ -855,6 +1123,286 @@ document.getElementById('btnReset').addEventListener('click', function() {
   document.getElementById('snum3').style.color = '';
   fileInput.value = '';
 });
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SISTEMA DE APRENDIZAJE AUTOMÁTICO
+   ═══════════════════════════════════════════════════════════════════════════
+   Flujo:
+     1. Usuario edita dir o comp en una fila marcada como "Revisar"
+     2. Al terminar de editar (blur), si el valor cambió respecto al parser,
+        se envía a Claude API: {original, parser_dir, parser_comp, user_dir, user_comp}
+     3. Claude analiza el patrón del error y devuelve una regla en JSON
+     4. La regla se guarda en localStorage y se aplica inmediatamente
+        a todas las filas que aún no han sido procesadas
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+var STORAGE_KEY = 'pibox_reglas_aprendidas_v1';
+
+/* ── Gestión de reglas en localStorage ────────────────────────────────────── */
+function cargarReglas() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) { return []; }
+}
+
+function guardarRegla(regla) {
+  var reglas = cargarReglas();
+  // Evitar duplicados por patron
+  var existe = reglas.some(function(r) {
+    return r.patron && regla.patron && normTildes(r.patron) === normTildes(regla.patron);
+  });
+  if (!existe) {
+    regla.id        = Date.now();
+    regla.fecha     = new Date().toLocaleString('es-CO');
+    regla.aplicaciones = 0;
+    reglas.push(regla);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(reglas));
+  }
+  actualizarPanelAprendizaje();
+}
+
+function eliminarRegla(id) {
+  var reglas = cargarReglas().filter(function(r) { return r.id !== id; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(reglas));
+  actualizarPanelAprendizaje();
+  renderModalReglas();
+}
+
+function limpiarTodasReglas() {
+  if (confirm('¿Eliminar todas las reglas aprendidas?')) {
+    localStorage.removeItem(STORAGE_KEY);
+    actualizarPanelAprendizaje();
+    cerrarModal();
+  }
+}
+
+function actualizarPanelAprendizaje() {
+  var reglas = cargarReglas();
+  var bar    = document.getElementById('learnBar');
+  var count  = document.getElementById('learnCount');
+  if (reglas.length > 0) {
+    bar.style.display = 'flex';
+    count.textContent = reglas.length + (reglas.length === 1 ? ' regla' : ' reglas');
+  } else {
+    bar.style.display = 'none';
+  }
+}
+
+/* ── Aplicar reglas aprendidas a un texto ──────────────────────────────────── */
+function aplicarReglasAprendidas(original) {
+  var reglas = cargarReglas();
+  if (!reglas.length) return null;
+
+  var origNorm = normTildes(original.toLowerCase());
+
+  for (var ri = 0; ri < reglas.length; ri++) {
+    var regla = reglas[ri];
+    try {
+      // Tipo 1: patron de texto fijo al final de la dirección
+      if (regla.tipo === 'patron_fijo' && regla.patron) {
+        var patronNorm = normTildes(regla.patron.toLowerCase());
+        var idx = origNorm.indexOf(patronNorm);
+        if (idx > 5) {
+          var dir  = original.slice(0, idx).trim();
+          var comp = original.slice(idx).trim();
+          // Verificar que la parte dir tenga estructura de dirección
+          if (/^(calle|carrera|diagonal|transversal|avenida|cl|cll|cr|cra|kra|dg|tv|ac|ak|av)/i.test(dir)) {
+            regla.aplicaciones = (regla.aplicaciones || 0) + 1;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(cargarReglas().map(function(r) {
+              return r.id === regla.id ? regla : r;
+            })));
+            return { dir: dir, comp: comp, warn: false, porRegla: regla.id };
+          }
+        }
+      }
+      // Tipo 2: separador específico
+      if (regla.tipo === 'separador' && regla.separador) {
+        var sep = regla.separador;
+        var si  = original.indexOf(sep);
+        if (si > 3) {
+          return {
+            dir:  original.slice(0, si).trim(),
+            comp: original.slice(si + sep.length).trim(),
+            warn: false, porRegla: regla.id
+          };
+        }
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
+/* ── Toast ──────────────────────────────────────────────────────────────────── */
+var _toastTimer = null;
+function mostrarToast(msg, icono, tipo) {
+  var t = document.getElementById('toast');
+  document.getElementById('toastMsg').textContent  = msg;
+  document.getElementById('toastIcon').textContent = icono || '🧠';
+  t.className = 'toast ' + (tipo || 'toast-purple');
+  t.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(function() { t.classList.remove('show'); }, 3500);
+}
+
+/* ── Modal de reglas ─────────────────────────────────────────────────────────── */
+function abrirModalReglas() {
+  renderModalReglas();
+  document.getElementById('modalBg').style.display = 'flex';
+}
+function cerrarModal() {
+  document.getElementById('modalBg').style.display = 'none';
+}
+function renderModalReglas() {
+  var reglas  = cargarReglas();
+  var content = document.getElementById('modalContent');
+  if (!reglas.length) {
+    content.innerHTML = '<div class="modal-empty">Todavía no hay reglas aprendidas.<br>Edita alguna corrección para que la herramienta empiece a aprender.</div>';
+    return;
+  }
+  content.innerHTML = reglas.map(function(r) {
+    return '<div class="rule-item">' +
+      '<div class="rule-item-head">' +
+        '<span class="rule-tag">' + (r.tipo || 'regla') + '</span>' +
+        '<button class="rule-del" onclick="eliminarRegla(' + r.id + ')">×</button>' +
+      '</div>' +
+      '<div class="rule-orig">Patrón: <span>' + esc(r.patron || r.separador || '—') + '</span></div>' +
+      '<div class="rule-desc">' + esc(r.descripcion || '') + '</div>' +
+      '<div style="font-size:11px;color:var(--gray600);margin-top:6px;">' +
+        'Aprendida: ' + r.fecha + ' · Aplicada ' + (r.aplicaciones || 0) + ' veces' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+/* ── Llamada a Claude API para analizar el error ─────────────────────────────── */
+var _analizandoSet = {}; // evitar doble análisis de la misma fila
+
+function analizarCorreccion(idx) {
+  /* Analiza localmente la corrección del usuario y extrae una regla de aprendizaje.
+     No requiere servidor ni API externa — todo ocurre en el navegador. */
+  if (_analizandoSet[idx]) return;
+  var r = processedRows[idx];
+  if (!r || !r.warn) return;
+
+  var dirCambiada  = r.dir  !== r._parserDir;
+  var compCambiada = r.comp !== r._parserComp;
+  if (!dirCambiada && !compCambiada) return;
+
+  _analizandoSet[idx] = true;
+  mostrarToast('Analizando patrón del error...', '🧠', 'toast-purple');
+
+  /* Pequeño timeout para no bloquear el hilo principal */
+  setTimeout(function() {
+    try {
+      var regla = inferirRegla(r.original, r._parserDir, r._parserComp, r.dir, r.comp);
+      if (regla) {
+        guardarRegla(regla);
+        reaplicarReglaAFilas(regla);
+        mostrarToast('Nueva regla aprendida: ' + regla.descripcion, '✅', 'toast-green');
+      } else {
+        mostrarToast('Corrección guardada', '✓', 'toast-green');
+      }
+    } catch(e) {
+      mostrarToast('Corrección guardada', '✓', 'toast-green');
+    }
+    delete _analizandoSet[idx];
+  }, 300);
+}
+
+/* ── Motor de inferencia local de reglas ──────────────────────────────────────
+   Compara lo que el parser devolvió vs lo que el usuario corrigió,
+   e infiere qué patrón debería haber disparado el corte correcto.
+   ─────────────────────────────────────────────────────────────────────────── */
+function inferirRegla(original, parserDir, parserComp, userDir, userComp) {
+  var orig     = original.trim();
+  var uDir     = userDir.trim();
+  var uComp    = userComp.trim();
+
+  /* ── Caso 1: el complemento correcto aparece pegado al final de la dirección
+     El usuario movió algo de dir → comp.
+     Buscamos la primera palabra del complemento correcto dentro del original.  */
+  if (uComp && uComp.length > 2) {
+    var firstWord = uComp.split(/\s+/)[0];
+    var origNorm  = normTildes(orig.toLowerCase());
+    var fwNorm    = normTildes(firstWord.toLowerCase());
+
+    // Verificar que esa primera palabra esté en el original y NO sea parte del formato vial
+    var posInOrig = origNorm.indexOf(fwNorm);
+    var esVial    = /^(calle|carrera|diagonal|transversal|avenida|cl|cll|cr|cra|kra|dg|tv|ac|ak|av|sur|norte|este|oeste|bis|no\.?|#)$/i.test(firstWord);
+
+    if (posInOrig > 5 && !esVial) {
+      /* La primera palabra del complemento correcto es el patrón de corte */
+      return {
+        tipo:        'patron_fijo',
+        patron:      firstWord,
+        descripcion: 'Cortar antes de "' + firstWord + '" — inicia complemento'
+      };
+    }
+  }
+
+  /* ── Caso 2: hay un separador implícito que el parser no reconoció
+     Buscar si entre el final de la dirección correcta y el inicio del
+     complemento correcto hay un carácter o token especial.              */
+  if (uDir && uComp) {
+    var dirEnd  = orig.toLowerCase().indexOf(normTildes(uDir.toLowerCase().slice(-6)));
+    var compIni = uComp.slice(0, 4);
+    // Buscar el punto de corte en el original
+    var cutIdx  = orig.length - uComp.length - 1;
+    if (cutIdx > 0 && cutIdx < orig.length) {
+      var between = orig.slice(Math.max(0, cutIdx - 1), cutIdx + 2).trim();
+      if (between && between.length <= 3 && !/\d/.test(between) && !/[a-zA-Z]{2,}/.test(between)) {
+        return {
+          tipo:        'separador',
+          separador:   between,
+          patron:      between,
+          descripcion: 'Usar "' + between + '" como separador dirección/complemento'
+        };
+      }
+    }
+  }
+
+  /* ── Caso 3: la dirección correcta termina antes — extraer la parte añadida ── */
+  if (uDir && parserDir && uDir.length < parserDir.length) {
+    /* El parser incluyó texto de más en la dirección */
+    var extra = parserDir.slice(uDir.length).trim();
+    if (extra.length > 2) {
+      var primeraPalabra = extra.split(/\s+/)[0];
+      if (primeraPalabra.length > 2) {
+        return {
+          tipo:        'patron_fijo',
+          patron:      primeraPalabra,
+          descripcion: 'Cortar antes de "' + primeraPalabra + '" — no forma parte de la dirección'
+        };
+      }
+    }
+  }
+
+  return null; // No se pudo inferir una regla clara
+}
+
+/* ── Reaplicar una regla nueva a filas pendientes ─────────────────────────────── */
+function reaplicarReglaAFilas(regla) {
+  var rerender = false;
+  processedRows.forEach(function(r, i) {
+    if (!r.warn || r.manualOk || r._editado) return; // no tocar filas ya revisadas o editadas
+    var resultado = aplicarReglasAprendidas(r.original);
+    if (resultado && resultado.porRegla) {
+      r.dir  = resultado.dir;
+      r.comp = resultado.comp;
+      r.warn = false;
+      r.manualOk = true; // marcar como resuelta por regla
+      rerender = true;
+    }
+  });
+  if (rerender) {
+    renderTabla();
+    mostrarToast('Regla aplicada a filas pendientes', '🔄', 'toast-purple');
+  }
+}
+
+/* ── Init: al cargar, mostrar panel si hay reglas guardadas ───────────────────── */
+actualizarPanelAprendizaje();
 
 function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
